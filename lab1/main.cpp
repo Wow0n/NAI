@@ -30,6 +30,8 @@ int main(int argc, char **argv) {
         lab1(operations.at(functionName).at(operationName), argNumbers);
     } catch (std::out_of_range aor) {
         return 1;
+    } catch (std::logic_error e) {
+        return 1;
     }
     return 0;
 }
