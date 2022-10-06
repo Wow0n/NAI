@@ -8,23 +8,25 @@
 
 using namespace std;
 
+void lab1(function<double(vector<double>)> operation, vector<double> numbers) {
+    cout << operation(numbers);
+}
 
 int main(int argc, char **argv) {
-    vector<string> argumenty;
-    map<string, function<double(double, double)>> mapa;
+    vector<double> argNumbers;
+    map<string, function<double(vector<double>)>> operations;
 
-    mapa["sin"] = [](vector<string> arguments) { cout << sin(arguments[0]); };
-    mapa["mod"] = [](vector<string> arguments) { return fmod(x, y); };
-    mapa["add"] = [](vector<string> arguments) { return x + y; };
+    operations["sin"] = [](vector<double> numbers) { return sin(numbers[0]); };
+    operations["mod"] = [](vector<double> numbers) { return fmod(numbers[0], numbers[1]); };
+    operations["add"] = [](vector<double> numbers) { return numbers[0] + numbers[1]; };
 
     try {
-        for (int i = 2; i < argc; i++) {
-            argumenty.emplace_back(argv[i]);
+        char* operationName = argv[2];
+        for (int i = 3; i < argc; i++) {
+            argNumbers.push_back(stod(argv[i]));
         }
 
-        auto selected_f = argumenty.at(0);
-
-        lab1(selected_f, mapa.at(selected_f));
+        lab1(operations.at(operationName), argNumbers);
     } catch (std::out_of_range aor) {
         return 1;
     }
