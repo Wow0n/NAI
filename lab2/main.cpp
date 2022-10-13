@@ -2,6 +2,7 @@
 #include <vector>
 #include <functional>
 #include <random>
+#include <chrono>
 
 auto brute_force = [](auto f, auto domain, int iterations) {
     auto current_p = domain();
@@ -33,17 +34,45 @@ int main() {
 
     auto xy_generator = [&]() {
         std::uniform_real_distribution<> dis(-10, 10);
-        return std::pair<double, double> (dis(mt_generator), dis(mt_generator));
+        return std::pair<double, double>(dis(mt_generator), dis(mt_generator));
     };
 
-    auto best_sphere = brute_force(sphere_f, xy_generator, 1000000);
-    std::cout << "best sphere x,y = " << best_sphere.first << ", " << best_sphere.second << std::endl;
+    for (int i = 0; i < 20; ++i) {
+        auto start = std::chrono::high_resolution_clock::now();
+        auto best_sphere = brute_force(sphere_f, xy_generator, 1000000);
+        auto stop = std::chrono::high_resolution_clock::now();
 
-    auto best_booth = brute_force(booth_f, xy_generator, 1000000);
-    std::cout << "best booth x,y = " << best_booth.first << ", " << best_booth.second << std::endl;
+        std::cout << "best sphere x,y = " << best_sphere.first << ", " << best_sphere.second
+                  << " | result: " << sphere_f(best_sphere)
+                  << " | time: " << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count()
+                  << std::endl;
+    }
 
-    auto best_matyas = brute_force(matyas_f, xy_generator, 1000000);
-    std::cout << "best matyas x,y = " << best_matyas.first << ", " << best_matyas.second << std::endl;
+    std::cout << "-----------------------" << std::endl;
+
+    for (int i = 0; i < 20; ++i) {
+        auto start = std::chrono::high_resolution_clock::now();
+        auto best_booth = brute_force(booth_f, xy_generator, 1000000);
+        auto stop = std::chrono::high_resolution_clock::now();
+
+        std::cout << "best booth x,y = " << best_booth.first << ", " << best_booth.second
+                  << " | result: " << booth_f(best_booth)
+                  << " | time: " << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count()
+                  << std::endl;
+    }
+
+    std::cout << "-----------------------" << std::endl;
+
+    for (int i = 0; i < 20; ++i) {
+        auto start = std::chrono::high_resolution_clock::now();
+        auto best_matyas = brute_force(matyas_f, xy_generator, 1000000);
+        auto stop = std::chrono::high_resolution_clock::now();
+
+        std::cout << "best matyas x,y = " << best_matyas.first << ", " << best_matyas.second
+                  << " | result: " << matyas_f(best_matyas)
+                  << " | time: " << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count()
+                  << std::endl;
+    }
 
     return 0;
 }
