@@ -3,51 +3,47 @@
 #include <functional>
 #include <random>
 
-/**
- * domain - generate domain points. Throws exception when all the points were returned
- */
-auto brute_force = [](auto f, auto domain) {
+auto brute_force = [](auto f, auto domain, int iterations) {
     auto current_p = domain();
     auto best_point = current_p;
 
-    try {
-        while (true) {
-            if (f(current_p) < f(best_point)) {
-                best_point = current_p;
-            }
-            current_p = domain();
+    for (int i = 0; i < iterations; ++i) {
+        if (f(current_p) < f(best_point)) {
+            best_point = current_p;
         }
-    } catch (std::exception &e) {
+        current_p = domain();
     }
 
     return best_point;
 };
 
-using domain_t = std::vector<double>;
 std::random_device rd;
 std::mt19937 mt_generator(rd());
 
 int main() {
-    auto sphere_f = [](double x) { return x * x; };
+    auto sphere_f = [](std::pair<double, double> pair) { return pow(pair.first, 2) + pow(pair.second, 2); };
 
-    auto booth_f = [](double x, double y) {
-        return pow((x + 2 * y - 7), 2) + pow((2 * x + y - 5), 2);
+    auto booth_f = [](std::pair<double, double> pair) {
+        return pow((pair.first + 2 * pair.second - 7), 2) + pow((2 * pair.first + pair.second - 5), 2);
     };
 
-    auto matyas_f = [](double x, double y) {
-        return 0.26 * (pow(x, 2) + pow(y, 2) - 0.48 * x * y);
+    auto matyas_f = [](std::pair<double, double> pair) {
+        return 0.26 * (pow(pair.first, 2) + pow(pair.second, 2) - 0.48 * pair.first * pair.second);
     };
 
-    auto x_generator = []() {
-        return std::uniform_real_distribution<> (-10, 10);
+    auto xy_generator = [&]() {
+        std::uniform_real_distribution<> dis(-10, 10);
+        return std::pair<double, double> (dis(mt_generator), dis(mt_generator));
     };
 
-    auto xy_generator = []() {
-        return std::pair(std::uniform_real_distribution<> (-10, 10), std::uniform_int_distribution<int> (-10, 10));
-    };
+    auto best_sphere = brute_force(sphere_f, xy_generator, 1000000);
+    std::cout << "best sphere x,y = " << best_sphere.first << ", " << best_sphere.second << std::endl;
 
-    auto best_point = brute_force(sphere_f, x_generator);
-    std::cout << "best x = " << best_point << std::endl;
+    auto best_booth = brute_force(booth_f, xy_generator, 1000000);
+    std::cout << "best booth x,y = " << best_booth.first << ", " << best_booth.second << std::endl;
+
+    auto best_matyas = brute_force(matyas_f, xy_generator, 1000000);
+    std::cout << "best matyas x,y = " << best_matyas.first << ", " << best_matyas.second << std::endl;
 
     return 0;
 }
