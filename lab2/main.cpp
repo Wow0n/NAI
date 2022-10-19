@@ -32,7 +32,7 @@ int main() {
         return 0.26 * (pow(pair.first, 2) + pow(pair.second, 2) - 0.48 * pair.first * pair.second);
     };
 
-    auto xy_generator = [&]() {
+    auto xy_generator = []() {
         std::uniform_real_distribution<> dis(-10, 10);
         return std::pair<double, double>(dis(mt_generator), dis(mt_generator));
     };
