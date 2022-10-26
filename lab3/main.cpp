@@ -38,18 +38,12 @@ auto hill_climbing = [](
 
     pair<double, double> best_p = start_point(a, b);
 
-    for (int iteration = 0; iteration < max_iterations; iteration++) {
+    for (int i = 0; i < max_iterations; i++) {
         auto close_points = get_close_points(best_p, a, b);
-        auto best_neighbour = *min_element(
-                close_points.begin(),
-                close_points.end(),
-                [f](auto a, auto b) {
-                    return f(a) > f(b);
-                }
-        );
-
-        if (f(best_neighbour) < f(best_p))
-            best_p = best_neighbour;
+        auto best_neighbour =
+                *std::min_element(close_points.begin(), close_points.end(),
+                                  [f](auto a, auto b) { return f(a) > f(b); });
+        if (f(best_neighbour) < f(best_p)) best_p = best_neighbour;
     }
     return best_p;
 };
@@ -57,17 +51,18 @@ auto hill_climbing = [](
 auto simulated_annealing = [](
         const function<double(pair<double, double> pair)> &f,
         const function<pair<double, double>(int, int)> &domain,
+        const function<pair<double, double>(pair<double, double>, int, int)> &neighbour,
         int iterations, int a, int b) {
 
     vector<pair<double, double>> pairsVector;
-    uniform_real_distribution<double> uk(0, 1);
-    double ukValue = uk(mt_generator);
+    uniform_real_distribution<double> uk(0.0, 1.0);
 
     auto best_point = domain(a, b);
     pairsVector.push_back(best_point);
 
     for (int i = 0; i < iterations; ++i) {
-        auto tk = domain(a, b);
+        double ukValue = uk(mt_generator);
+        auto tk = neighbour(best_point, a, b);
         if (f(tk) <= f(best_point)) {
             best_point = tk;
             pairsVector.push_back(best_point);
@@ -82,21 +77,53 @@ auto simulated_annealing = [](
     return best_point;
 };
 
+bool isInDomain(double x, int a, int b) {
+    return (a <= x) && (x <= b);
+}
+
 auto xy_generator = [](int a, int b) {
     uniform_real_distribution<> dis(a, b);
     return pair<double, double>(dis(mt_generator), dis(mt_generator));
 };
 
 auto xy_generator2 = [](pair<double, double> p, int a, int b) -> vector<pair<double, double>> {
-    uniform_real_distribution<> dis(a, b);
-    return {pair<double, double>(dis(mt_generator), dis(mt_generator))};
+    double precision = 1.0 / 128.0;
+    vector<pair<double, double>> ret;
+
+    for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+            pair<double, double> new_point = {p.first + (i * precision),
+                                              p.second + (j * precision)};
+            if (isInDomain(new_point.first, a, b) &&
+                isInDomain(new_point.second, a, b)) {
+                ret.push_back(new_point);
+            }
+        }
+    }
+    return ret;
+};
+
+auto xy_generator3 = [](pair<double, double> p, int a, int b) {
+    normal_distribution<> neighbour;
+    double firstPair, secondPair;
+
+    do {
+        firstPair = p.first + neighbour(mt_generator) * 0.01;
+    } while (firstPair < a && firstPair > b);
+
+    do {
+        secondPair = p.second + neighbour(mt_generator) * 0.01;
+    } while (secondPair < a && secondPair > b);
+
+    return pair<double, double>(firstPair, secondPair);
 };
 
 int main() {
 //    (-5;5)
     auto ackley_f = [](pair<double, double> pair) {
-        return -20.0 * exp(-0.2 * sqrt(0.5 * (pow(pair.first, 2) + pow(pair.second, 2)))) -
-               exp(0.5 * (cos(2 * M_PI * pair.first) + cos(2 * M_PI * pair.second))) + exp(1) + 20;
+        return -20 * exp(-0.2 * sqrt(0.5 * (pow(pair.first, 2) + pow(pair.second, 2)))) -
+               exp(0.5 * (cos(2 * M_PI * pair.first) + cos(2 * M_PI * pair.second))) +
+               exp(1) + 20;
     };
 
 //    (-5;5)
@@ -134,7 +161,7 @@ int main() {
 
 
     start = std::chrono::high_resolution_clock::now();
-    auto ackley_annealing = simulated_annealing(ackley_f, xy_generator, globalIterations, -5, 5);
+    auto ackley_annealing = simulated_annealing(ackley_f, xy_generator, xy_generator3, globalIterations, -5, 5);
     stop = std::chrono::high_resolution_clock::now();
 
     cout << "~simulated_annealing~ (x,y) = " << ackley_annealing.first << ", " << ackley_annealing.second
@@ -166,7 +193,7 @@ int main() {
 
 
     start = std::chrono::high_resolution_clock::now();
-    auto himmelblau_annealing = simulated_annealing(himmelblau_f, xy_generator, globalIterations, -5, 5);
+    auto himmelblau_annealing = simulated_annealing(himmelblau_f, xy_generator, xy_generator3, globalIterations, -5, 5);
     stop = std::chrono::high_resolution_clock::now();
 
     cout << "~simulated_annealing~ (x,y) = " << himmelblau_annealing.first << ", " << himmelblau_annealing.second
@@ -198,7 +225,7 @@ int main() {
 
 
     start = std::chrono::high_resolution_clock::now();
-    auto holderTable_annealing = simulated_annealing(holderTable_f, xy_generator, globalIterations, -10, 10);
+    auto holderTable_annealing = simulated_annealing(holderTable_f, xy_generator, xy_generator3, globalIterations, -10,10);
     stop = std::chrono::high_resolution_clock::now();
 
     cout << "~simulated_annealing~ (x,y) = " << holderTable_annealing.first << ", " << holderTable_annealing.second
