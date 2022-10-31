@@ -8,6 +8,9 @@ std::mt19937 mt_generator(rd());
 
 using namespace std;
 
+using chromosome_t = std::vector<int>;
+using population_t = std::vector<chromosome_t>;
+
 auto genetic_algorithm = [](
         auto initial_population, auto fitness, auto term_condition,
         auto selection, double p_crossover,
@@ -39,13 +42,6 @@ auto genetic_algorithm = [](
     return population;
 };
 
-using chromosome_t = std::vector<int>;
-using population_t = std::vector<chromosome_t>;
-
-std::vector<double> fintess_function(population_t pop) {
-    return {};
-}
-
 std::vector<int> selection_empty(std::vector<double> fitnesses) {
     return {};
 }
@@ -58,22 +54,72 @@ chromosome_t mutation_empty(chromosome_t parents, double p_mutation) {
     return parents;
 }
 
-int main() {
-    population_t population = {{1, 0, 1, 0, 1, 0, 1},
-                               {1, 0, 1, 0, 1, 0, 1}};
-    auto result = genetic_algorithm(population,
-                                    fintess_function,
-                                    [](auto a, auto b) { return true; },
-                                    selection_empty, 1.0,
-                                    crossover_empty,
-                                    0.01, mutation_empty);
-    for (chromosome_t chromosome: result) {
-        cout << "[";
-        for (int p: chromosome) {
-            cout << p;
+population_t generate_population(int size) {
+    population_t pop;
+
+    for (int i = 0; i < size; ++i) {
+        chromosome_t ch;
+        chromosome_t tmp;
+
+        for (int j = 0; j < size ; ++j) {
+            uniform_int_distribution<int> uni(0, 1);
+            ch.push_back(uni(mt_generator));
         }
-        cout << "] ";
+        pop.push_back(ch);
     }
-    cout << endl;
-    return 0;
+
+    return pop;
+}
+
+pair<double, double> decode(chromosome_t chromosome) {
+    double x = 0.0;
+    double y = 0.0;
+
+    for (int i = 0; i < chromosome.size() / 2; i++) {
+        x = x * 2 + chromosome[i];
+    }
+
+    for (int i = chromosome.size() / 2; i < chromosome.size(); i++) {
+        y = y * 2 + chromosome[i];
+    }
+
+    x = x / pow(2.0, (chromosome.size() / 2 - 4)) - 8;
+    y = y / pow(2.0, (chromosome.size() / 2 - 4)) - 8;
+
+    return {x, y};
+}
+
+// <-5;5>
+auto ackley_f = [](pair<double, double> pair) {
+    return -20 * exp(-0.2 * sqrt(0.5 * (pow(pair.first, 2) + pow(pair.second, 2)))) -
+           exp(0.5 * (cos(2 * M_PI * pair.first) + cos(2 * M_PI * pair.second))) + exp(1) + 20;
+};
+
+double fitness_f(chromosome_t chromosome) {
+    return 1.0 / (1.0 + abs(ackley_f(decode(chromosome))));
+}
+
+int main() {
+    population_t population = generate_population(100 + (22432 % 10) * 2);
+
+    for (auto &chromosome: population) {
+        auto decoded = decode(chromosome);
+        cout << decoded.first << ", " << decoded.second << " | " << fitness_f(chromosome) << endl;
+    }
+
+//    auto result = genetic_algorithm(population,
+//                                    fintess_function,
+//                                    [](auto a, auto b) { return true; },
+//                                    selection_empty, 1.0,
+//                                    crossover_empty,
+//                                    0.01, mutation_empty);
+//    for (chromosome_t chromosome: result) {
+//        cout << "[";
+//        for (int p: chromosome) {
+//            cout << p;
+//        }
+//        cout << "] ";
+//    }
+//    cout << endl;
+//    return 0;
 }
