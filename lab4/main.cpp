@@ -59,9 +59,9 @@ population_t generate_population(int size) {
 
     for (int i = 0; i < size; ++i) {
         chromosome_t ch;
-        chromosome_t tmp;
 
-        for (int j = 0; j < size ; ++j) {
+        for (int j = 0; j < size; ++j) {
+//            generować w dziedzinie, później przeliczyć na bin i wrzucic do pary
             uniform_int_distribution<int> uni(0, 1);
             ch.push_back(uni(mt_generator));
         }
@@ -75,16 +75,25 @@ pair<double, double> decode(chromosome_t chromosome) {
     double x = 0.0;
     double y = 0.0;
 
-    for (int i = 0; i < chromosome.size() / 2; i++) {
+    for (int i = 1; i < chromosome.size() / 2; i++) {
         x = x * 2 + chromosome[i];
     }
 
-    for (int i = chromosome.size() / 2; i < chromosome.size(); i++) {
+    for (int i = (chromosome.size() / 2) + 1; i < chromosome.size(); i++) {
         y = y * 2 + chromosome[i];
     }
 
-    x = x / pow(2.0, (chromosome.size() / 2 - 4)) - 8;
-    y = y / pow(2.0, (chromosome.size() / 2 - 4)) - 8;
+    if (chromosome[0] == 0) {
+        x = 1 / x * -5;
+    } else {
+        x = -1 / x * -5;
+    }
+
+    if (chromosome[chromosome.size() / 2] == 0) {
+        y = 1 / y * -5;
+    } else {
+        y = -1 / y * -5;
+    }
 
     return {x, y};
 }
@@ -104,7 +113,7 @@ int main() {
 
     for (auto &chromosome: population) {
         auto decoded = decode(chromosome);
-        cout << decoded.first << ", " << decoded.second << " | " << fitness_f(chromosome) << endl;
+        cout << decoded.first << ", " << decoded.second << endl;
     }
 
 //    auto result = genetic_algorithm(population,
