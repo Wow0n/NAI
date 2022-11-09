@@ -61,7 +61,6 @@ population_t generate_population(int size) {
         chromosome_t ch;
 
         for (int j = 0; j < size; ++j) {
-//            generować w dziedzinie, później przeliczyć na bin i wrzucic do pary
             uniform_int_distribution<int> uni(0, 1);
             ch.push_back(uni(mt_generator));
         }
@@ -72,30 +71,22 @@ population_t generate_population(int size) {
 }
 
 pair<double, double> decode(chromosome_t chromosome) {
+    int half = chromosome.size() / 2;
     double x = 0.0;
     double y = 0.0;
 
-    for (int i = 1; i < chromosome.size() / 2; i++) {
-        x = x * 2 + chromosome[i];
+    for (int i = 1; i < half; i++) {
+        x += chromosome[i] * (1 / pow(2, i));
     }
 
-    for (int i = (chromosome.size() / 2) + 1; i < chromosome.size(); i++) {
-        y = y * 2 + chromosome[i];
+    for (int i = half + 1; i < chromosome.size(); i++) {
+        y += chromosome[i] * (1 / pow(2, i - (half)));
     }
 
-    if (chromosome[0] == 0) {
-        x = 1 / x * -5;
-    } else {
-        x = -1 / x * -5;
-    }
+    if (chromosome[0] == 1) x *= -1.0;
+    if (chromosome[half] == 1) y *= -1.0;
 
-    if (chromosome[chromosome.size() / 2] == 0) {
-        y = 1 / y * -5;
-    } else {
-        y = -1 / y * -5;
-    }
-
-    return {x, y};
+    return {x * 5, y * 5};
 }
 
 // <-5;5>
