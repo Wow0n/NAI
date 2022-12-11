@@ -59,18 +59,21 @@ int main(int argc, char **argv) {
 
             auto m = moments(biggest, false);
             Point p = {(int) (m.m10 / m.m00), (int) (m.m01 / m.m00)};
+            Point p_2 = {(int) ((m.m10 / m.m00) - 4), (int) ((m.m01 / m.m00) - 4)};
             int x = (int) (m.m10 / m.m00);
             int y = (int) (m.m01 / m.m00);
             ellipse(src_img, p, Size{5, 5}, 0.0, 0, 360, {0, 255, 255}, 3);
 
             auto m1 = moments(secondBiggest, false);
             Point p1 = {(int) (m1.m10 / m1.m00), (int) (m1.m01 / m1.m00)};
+            Point p1_2 = {(int) ((m1.m10 / m1.m00) - 4), (int) ((m1.m01 / m1.m00) - 4)};
             int x1 = (int) (m1.m10 / m1.m00);
             int y1 = (int) (m1.m01 / m1.m00);
             ellipse(src_img, p1, Size{5, 5}, 0.0, 0, 360, {0, 255, 255}, 3);
 
             if (abs(y1 - y) < 20) {
-                line(src_img, p, p1, cv::Scalar(255, 0, 0), 5, cv::LINE_8);
+                line(src_img, p, p1, cv::Scalar(255, 0, 0), 2, cv::LINE_8);
+                line(src_img, p_2, p1_2, cv::Scalar(0, 255, 0), 2, cv::LINE_8);
             }
         }
 
