@@ -13,8 +13,8 @@ bool compareContourAreas(vector<Point> contour1, vector<Point> contour2) {
 }
 
 int main(int argc, char **argv) {
-    vector<int> lower = {0, 141, 87};
-    vector<int> upper = {15, 255, 255};
+    vector<int> lower = {150, 80, 150};
+    vector<int> upper = {185, 255, 255};
     namedWindow("options", cv::WINDOW_AUTOSIZE);
     createTrackbar("lh", "options", &lower[0], 255);
     createTrackbar("ls", "options", &lower[1], 255);
@@ -59,14 +59,14 @@ int main(int argc, char **argv) {
 
             auto m = moments(biggest, false);
             Point p = {(int) (m.m10 / m.m00), (int) (m.m01 / m.m00)};
-            Point p_2 = {(int) ((m.m10 / m.m00) - 4), (int) ((m.m01 / m.m00) - 4)};
+            Point p_2 = {(int) ((m.m10 / m.m00)), (int) ((m.m01 / m.m00) - 4)};
             int x = (int) (m.m10 / m.m00);
             int y = (int) (m.m01 / m.m00);
             ellipse(src_img, p, Size{5, 5}, 0.0, 0, 360, {0, 255, 255}, 3);
 
             auto m1 = moments(secondBiggest, false);
             Point p1 = {(int) (m1.m10 / m1.m00), (int) (m1.m01 / m1.m00)};
-            Point p1_2 = {(int) ((m1.m10 / m1.m00) - 4), (int) ((m1.m01 / m1.m00) - 4)};
+            Point p1_2 = {(int) ((m1.m10 / m1.m00)), (int) ((m1.m01 / m1.m00) - 4)};
             int x1 = (int) (m1.m10 / m1.m00);
             int y1 = (int) (m1.m01 / m1.m00);
             ellipse(src_img, p1, Size{5, 5}, 0.0, 0, 360, {0, 255, 255}, 3);
